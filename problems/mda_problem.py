@@ -229,7 +229,9 @@ class MDAProblem(GraphProblem):
                 continue
             if apartment.nr_roommates>self.problem_input.ambulance.total_fridges_capacity-state_to_expand.get_total_nr_tests_taken_and_stored_on_ambulance():
                 continue
-            new_tests_on_ambulance = state_to_expand.tests_on_ambulance.Union(frozenset([apartment]))
+            new_tests_on_ambulance = set(state_to_expand.tests_on_ambulance)
+            new_tests_on_ambulance.add(apartment)
+            new_tests_on_ambulance = frozenset(new_tests_on_ambulance)
             new_matoshim = state_to_expand.nr_matoshim_on_ambulance-apartment.nr_roommates
             state = MDAState(apartment, new_tests_on_ambulance, state_to_expand.tests_transferred_to_lab, new_matoshim,
                              state_to_expand.visited_labs)
@@ -244,8 +246,11 @@ class MDAProblem(GraphProblem):
                 matoshim = 0 if lab in state_to_expand.visited_labs else lab.max_nr_matoshim
                 matoshim = matoshim + state_to_expand.nr_matoshim_on_ambulance
                 transfered = state_to_expand.tests_transferred_to_lab.union(state_to_expand.tests_on_ambulance)
+                new_transferred = set(state_to_expand.visited_labs)
+                new_transferred.add(lab)
+                new_transferred = frozenset(new_transferred)
                 state = MDAState(lab,frozenset(), transfered,
-                                 matoshim, state_to_expand.visited_labs.union(frozenset([lab])))
+                                 matoshim, new_transferred)
                 name = 'go to lab ' + lab.name
                 yield OperatorResult(successor_state=state,
                                      operator_cost=self.get_operator_cost(state_to_expand, state),
@@ -288,7 +293,7 @@ class MDAProblem(GraphProblem):
                                 its first `k` items and until the `n`-th item.
             You might find this tip useful for summing a slice of a collection.
         """
-        dist = self.map_distance_finder.get_map_cost_between(prev_state.current_location(), succ_state.current_location())
+        dist = self.map_distance_finder.get_map_cost_between(prev_state.current_location, succ_state.current_location)
 
         if dist is None:
             return MDACost(float('inf'), float('inf'), float('inf'), self.optimization_objective)
@@ -300,14 +305,14 @@ class MDAProblem(GraphProblem):
             nr_active_fridges = math.ceil(nr_tests / fridge_capacity)
             fridge_consumption = sum(self.problem_input.ambulance.fridges_gas_consumption_liter_per_meter[:nr_active_fridges])
             is_succ_lab = 1 if isinstance(succ_state.current_site , Laboratory) else 0
-            is_prev_Taken =  1 if prev_state.get>0 else 0
+            is_prev_Taken =  1 if prev_state.get_total_nr_tests_taken_and_stored_on_ambulance()>0 else 0
             is_revisit = 1 if is_succ_lab and succ_state.current_site in prev_state.visited_labs else 0
             monetary = gas_price*(gas_consumption+fridge_consumption)*dist
-            if isinstance(succ_state.current_site , Laboratory):
+            if isinstance(succ_state.current_site, Laboratory):
                 monetary = monetary+is_prev_Taken*succ_state.current_site.tests_transfer_cost+is_revisit*succ_state.current_site.revisit_extra_cost
 
             cost_test_travel = prev_state.get_total_nr_tests_taken_and_stored_on_ambulance()*dist
-            return MDACost(distance_cost=dist,monetary_cost=monetary, tests_travel_distance_cost=cost_test_travel, optimization_objective=self.optimization_objective)
+            return MDACost(distance_cost=dist, monetary_cost=monetary, tests_travel_distance_cost=cost_test_travel, optimization_objective=self.optimization_objective)
 
 
 
@@ -324,7 +329,7 @@ class MDAProblem(GraphProblem):
         """
         assert isinstance(state, MDAState)
         return isinstance(state.current_site,
-                          Laboratory) and self.problem_input.reported_apartments == state.tests_transferred_to_lab
+                          Laboratory) and set(self.problem_input.reported_apartments) == state.tests_transferred_to_lab
 
 
         raise NotImplementedError  # TODO: remove the line!
