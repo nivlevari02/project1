@@ -209,11 +209,14 @@ def mda_problem_with_astar_experiments():
     res = as_air.solve_problem(moderate_mda_problem_with_distance_cost)
     print(res)
 
-    exit()  # TODO: remove!
+
 
     # Ex.25
     # TODO: create an instance of `AStar` with the `MDASumAirDistHeuristic`,
     #       solve the `moderate_mda_problem_with_distance_cost` with it and print the results.
+    as_air = AStar(MDASumAirDistHeuristic)
+    res = as_air.solve_problem(moderate_mda_problem_with_distance_cost)
+    print(res)
     exit()  # TODO: remove!
 
     # Ex.28

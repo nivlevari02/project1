@@ -94,9 +94,18 @@ class MDASumAirDistHeuristic(HeuristicFunction):
         if len(all_certain_junctions_in_remaining_ambulance_path) < 2:
             return 0
 
-        curr_state = state
+        curr_state = state.current_location
+        dist = [0]
         while len(all_certain_junctions_in_remaining_ambulance_path) > 0:
-            min_dist_junc = min(all_certain_junctions_in_remaining_ambulance_path,key=)
+            min_dist_junc = min(all_certain_junctions_in_remaining_ambulance_path,
+                                key=lambda x: (self.cached_air_distance_calculator.get_air_distance_between_junctions(curr_state, x),x.index))
+            min_dist = self.cached_air_distance_calculator.get_air_distance_between_junctions(curr_state, min_dist_junc)
+            dist.append(min_dist)
+            curr_state = min_dist_junc
+            all_certain_junctions_in_remaining_ambulance_path.remove(min_dist_junc)
+
+        return sum(dist)
+
 
 
 
