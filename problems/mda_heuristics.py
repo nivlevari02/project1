@@ -94,6 +94,7 @@ class MDASumAirDistHeuristic(HeuristicFunction):
         if len(all_certain_junctions_in_remaining_ambulance_path) < 2:
             return 0
 
+
         curr_state = state.current_location
         dist = [0]
         while len(all_certain_junctions_in_remaining_ambulance_path) > 0:
