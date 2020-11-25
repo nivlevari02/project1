@@ -99,7 +99,7 @@ class MDASumAirDistHeuristic(HeuristicFunction):
         dist = [0]
         while len(all_certain_junctions_in_remaining_ambulance_path) > 0:
             min_dist_junc = min(all_certain_junctions_in_remaining_ambulance_path,
-                                key=lambda x: (self.cached_air_distance_calculator.get_air_distance_between_junctions(curr_state, x),x.index))
+                                key=lambda x: (self.cached_air_distance_calculator.get_air_distance_between_junctions(curr_state, x), x.index))
             min_dist = self.cached_air_distance_calculator.get_air_distance_between_junctions(curr_state, min_dist_junc)
             dist.append(min_dist)
             curr_state = min_dist_junc
@@ -204,6 +204,11 @@ class MDATestsTravelDistToNearestLabHeuristic(HeuristicFunction):
             """
             Returns the distance between `junction` and the laboratory that is closest to `junction`.
             """
-            return min(...)  # TODO: replace `...` with the relevant implementation.
-
-        raise NotImplementedError  # TODO: remove this line!
+            return min(self.cached_air_distance_calculator.get_air_distance_between_junctions(junction, lab.location)
+                       for lab in MDAProblem(self.problem).problem_input.laboratories)  # TODO: replace `...` with the relevant implementation.
+        apartments = self.problem.get_reported_apartments_waiting_to_visit(state)
+        total_sum = 0
+        if state.get_total_nr_tests_taken_and_stored_on_ambulance() > 0:
+            total_sum = state.get_total_nr_tests_taken_and_stored_on_ambulance() * air_dist_to_closest_lab(state.current_location)
+        total_sum = total_sum + sum(air_dist_to_closest_lab(apartment.location) for apartment in apartments)
+        return total_sum
