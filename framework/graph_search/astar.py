@@ -88,4 +88,3 @@ class AStar(BestFirstSearch):
                 return
         self.open.push_node(successor_node)
 
-        #raise NotImplementedError  # TODO: remove this line!

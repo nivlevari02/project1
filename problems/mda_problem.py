@@ -232,7 +232,7 @@ class MDAProblem(GraphProblem):
             new_tests_on_ambulance = set(state_to_expand.tests_on_ambulance)
             new_tests_on_ambulance.add(apartment)
             new_tests_on_ambulance = frozenset(new_tests_on_ambulance)
-            new_matoshim = state_to_expand.nr_matoshim_on_ambulance-apartment.nr_roommates
+            new_matoshim = state_to_expand.nr_matoshim_on_ambulance - apartment.nr_roommates
             state = MDAState(apartment, new_tests_on_ambulance, state_to_expand.tests_transferred_to_lab, new_matoshim,
                              state_to_expand.visited_labs)
             name = 'visit ' + apartment.reporter_name
@@ -245,12 +245,12 @@ class MDAProblem(GraphProblem):
             else:
                 matoshim = 0 if lab in state_to_expand.visited_labs else lab.max_nr_matoshim
                 matoshim = matoshim + state_to_expand.nr_matoshim_on_ambulance
-                transfered = state_to_expand.tests_transferred_to_lab.union(state_to_expand.tests_on_ambulance)
+                transfered = frozenset(set(state_to_expand.tests_transferred_to_lab).union(set(state_to_expand.tests_on_ambulance)))
                 new_transferred = set(state_to_expand.visited_labs)
                 new_transferred.add(lab)
-                new_transferred = frozenset(new_transferred)
-                state = MDAState(lab,frozenset(), transfered,
-                                 matoshim, new_transferred)
+                new_transferred_frozen = frozenset(new_transferred)
+                state = MDAState(lab, frozenset(), transfered,
+                                 matoshim, new_transferred_frozen)
                 name = 'go to lab ' + lab.name
                 yield OperatorResult(successor_state=state,
                                      operator_cost=self.get_operator_cost(state_to_expand, state),
@@ -318,7 +318,7 @@ class MDAProblem(GraphProblem):
 
 
 
-        raise NotImplementedError  # TODO: remove this line!
+
 
     def is_goal(self, state: GraphProblemState) -> bool:
         """
@@ -332,7 +332,7 @@ class MDAProblem(GraphProblem):
                           Laboratory) and set(self.problem_input.reported_apartments) == state.tests_transferred_to_lab
 
 
-        raise NotImplementedError  # TODO: remove the line!
+
 
     def get_zero_cost(self) -> Cost:
         """

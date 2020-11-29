@@ -168,9 +168,8 @@ class MDAMSTAirDistHeuristic(HeuristicFunction):
 
 
 
-        G.add_weighted_edges_from()
 
-        raise NotImplementedError  # TODO: remove this line!
+
 
 
 class MDATestsTravelDistToNearestLabHeuristic(HeuristicFunction):
@@ -205,10 +204,10 @@ class MDATestsTravelDistToNearestLabHeuristic(HeuristicFunction):
             Returns the distance between `junction` and the laboratory that is closest to `junction`.
             """
             return min(self.cached_air_distance_calculator.get_air_distance_between_junctions(junction, lab.location)
-                       for lab in MDAProblem(self.problem).problem_input.laboratories)  # TODO: replace `...` with the relevant implementation.
+                       for lab in self.problem.problem_input.laboratories)  # TODO: replace `...` with the relevant implementation.
         apartments = self.problem.get_reported_apartments_waiting_to_visit(state)
         total_sum = 0
         if state.get_total_nr_tests_taken_and_stored_on_ambulance() > 0:
-            total_sum = state.get_total_nr_tests_taken_and_stored_on_ambulance() * air_dist_to_closest_lab(state.current_location)
-        total_sum = total_sum + sum(air_dist_to_closest_lab(apartment.location) for apartment in apartments)
-        return total_sum
+           total_sum = state.get_total_nr_tests_taken_and_stored_on_ambulance() * air_dist_to_closest_lab(state.current_location)
+        return total_sum + sum(air_dist_to_closest_lab(apartment.location)*apartment.nr_roommates for apartment in apartments)
+
